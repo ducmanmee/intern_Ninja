@@ -15,7 +15,6 @@ public class Player : Character
     private bool isGrounded = true;
     private bool isJumping = false;
     private bool isAttack = false;
-    private bool isDead = false;
     [SerializeField] private float jumpForce = 350;
     private int coin = 0;
 
@@ -110,7 +109,6 @@ public class Player : Character
     void FixedUpdate()
     {
         if (isDead) return;
-
         horizontal = Input.GetAxisRaw("Horizontal");
 
         if(isAttack)
@@ -134,7 +132,6 @@ public class Player : Character
     public override void OnInit()
     {
         base.OnInit();
-        isDead = false;
         isAttack = false;
 
         transform.position = savePoint;
@@ -206,11 +203,11 @@ public class Player : Character
         }
         if(collision.tag == "deathZone")
         {
-            isDead = true;
+            OnHit(100);
             _changeAnim("die");
 
             Invoke(nameof(OnInit), 1f);
-        }
+        }   
     }
 
     internal void SavePoint()

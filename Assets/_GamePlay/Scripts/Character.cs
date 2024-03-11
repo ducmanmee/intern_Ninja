@@ -15,7 +15,7 @@ public class Character : MonoBehaviour
 
 
 
-    public bool IsDead => hp <= 0;
+    public bool isDead => hp <= 0;
 
     private void Start()
     {
@@ -51,10 +51,10 @@ public class Character : MonoBehaviour
 
     public void OnHit(float damage)
     {
-        if (!IsDead)
+        if (!isDead)
         {
             hp -= damage;
-            if (IsDead)
+            if (isDead)
             {
                 hp = 0;
                 OnDeath();
@@ -64,6 +64,6 @@ public class Character : MonoBehaviour
             Instantiate(combatTextPrb, transform.position + Vector3.up, Quaternion.identity).OnInit(damage);
         }
 
-    }
+    } 
 
 }

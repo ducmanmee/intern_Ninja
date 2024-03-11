@@ -16,7 +16,6 @@ public class Enemy : Character
     private IState currentState;
     private bool isRight = true;
 
-
     private void Update()
     {
         if(currentState != null)

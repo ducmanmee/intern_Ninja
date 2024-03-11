@@ -8,6 +8,7 @@ TagManager:
   - deathZone
   - EnemyWall
   - Enemy
+  - MushRoom
   layers:
   - Default
   - TransparentFX
