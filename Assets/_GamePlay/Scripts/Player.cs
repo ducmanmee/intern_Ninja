@@ -101,7 +101,7 @@ public class Player : Character
     {
         if (isDead) return;
 
-        horizontal = Input.GetAxisRaw("Horizontal");
+        //horizontal = Input.GetAxisRaw("Horizontal");
 
         if(isAttack)
         {
@@ -152,7 +152,7 @@ public class Player : Character
         return ( hit.collider != null);
     }    
 
-    private void _Attack()
+    public void _Attack()
     {
         _changeAnim("attack");
         isAttack = true;
@@ -168,7 +168,7 @@ public class Player : Character
         _changeAnim("idle");
     }
 
-    private void _Throw()
+    public void _Throw()
     {
         _changeAnim("throw");
         isAttack = true;
@@ -177,16 +177,13 @@ public class Player : Character
         Instantiate(kunaiPrefabs, throwPoint.position, throwPoint.rotation);
     }
 
-    
-
-    private void _Jump()
+    public void _Jump()
     {
         isJumping = true;
         _changeAnim("jump");
         playerRb.AddForce(jumpForce * Vector2.up);
     }  
     
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if(collision.tag == "coin")
@@ -203,7 +200,6 @@ public class Player : Character
         }
     }
 
-
     internal void SavePoint()
     {
         savePoint = transform.position;
@@ -218,5 +214,10 @@ public class Player : Character
     {
         attackArea.SetActive(false);
 
+    }
+
+    public void SetMove(float horizontal)
+    {
+        this.horizontal = horizontal;
     }
 }
