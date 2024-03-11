@@ -38,12 +38,10 @@ public class Player : Character
     private void Awake()
     {
         makeInstance();
-    }
-
-    private void Start()
-    {
         SavePoint();
         OnInit();
+        //Save coin sau khi play again
+        coin = PlayerPrefs.GetInt("coin", 0);
     }
 
     private void Update()
@@ -101,7 +99,7 @@ public class Player : Character
     {
         if (isDead) return;
 
-        //horizontal = Input.GetAxisRaw("Horizontal");
+        horizontal = Input.GetAxisRaw("Horizontal");
 
         if(isAttack)
         {
@@ -131,6 +129,8 @@ public class Player : Character
         transform.position = savePoint;
         _changeAnim("idle");
         DeActiveAttackArea();
+
+        UIManager.instance.setCoin(coin);
     }
 
     public override void OnDespawn()
@@ -189,6 +189,8 @@ public class Player : Character
         if(collision.tag == "coin")
         {
             coin++;
+            PlayerPrefs.SetInt("coin", coin);
+            UIManager.instance.setCoin(coin);
             Destroy(collision.gameObject);
         }
         if(collision.tag == "deathZone")
