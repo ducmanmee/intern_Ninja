@@ -9,6 +9,8 @@ TagManager:
   - EnemyWall
   - Enemy
   - MushRoom
+  - kunai
+  - Trap
   layers:
   - Default
   - TransparentFX

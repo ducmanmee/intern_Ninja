@@ -207,7 +207,14 @@ public class Player : Character
             _changeAnim("die");
 
             Invoke(nameof(OnInit), 1f);
-        }   
+        }
+        if (collision.tag == "Trap")
+        {
+            OnHit(100);
+            _changeAnim("die");
+
+            Invoke(nameof(OnInit), 1f);
+        }
     }
 
     internal void SavePoint()

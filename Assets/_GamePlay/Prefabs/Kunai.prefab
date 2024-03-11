@@ -96,7 +96,7 @@ GameObject:
   - component: {fileID: 2035550529659099320}
   m_Layer: 0
   m_Name: Kunai
-  m_TagString: Untagged
+  m_TagString: kunai
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
