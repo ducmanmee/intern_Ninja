@@ -9,6 +9,8 @@ public class Player : Character
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private float speed = 5f;
 
+    private bool doubleJump;
+
     private float horizontal;
     private bool isGrounded = true;
     private bool isJumping = false;
@@ -50,15 +52,25 @@ public class Player : Character
 
         isGrounded = _checkGrounded();
         //jump
-        if (isGrounded)
+        if(isGrounded && !Input.GetKeyDown(KeyCode.Space))
         {
-            if(isJumping)
-            {
-                return;
-            }
-            if (Input.GetKeyDown(KeyCode.Space))
+            doubleJump = false;
+        }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if( isGrounded || doubleJump)
             {
                 _Jump();
+                doubleJump = !doubleJump;
+            }
+        }
+
+        if (isGrounded)
+        {
+
+            if(isJumping || doubleJump)
+            {
+                return;
             }
 
             if (Mathf.Abs(horizontal) > 0.1f)
@@ -122,7 +134,6 @@ public class Player : Character
     public override void OnInit()
     {
         base.OnInit();
-        Debug.Log(savePoint);
         isDead = false;
         isAttack = false;
 
