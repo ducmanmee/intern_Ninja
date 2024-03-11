@@ -776,6 +776,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   anim: {fileID: 2040572574}
   healthBar: {fileID: 1131404838}
+  combatTextPrb: {fileID: 9106582708601757766, guid: 18b15b7326ad71343b683ace11074eb2, type: 3}
   playerRb: {fileID: 197626006}
   groundLayer:
     serializedVersion: 2
@@ -10224,6 +10225,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   anim: {fileID: 1002570011}
   healthBar: {fileID: 1694233927}
+  combatTextPrb: {fileID: 9106582708601757766, guid: 18b15b7326ad71343b683ace11074eb2, type: 3}
   attackRange: 2
   moveSpeed: 3
   rb: {fileID: 1651054349}
@@ -10367,6 +10369,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   anim: {fileID: 1687947482}
   healthBar: {fileID: 1632092644}
+  combatTextPrb: {fileID: 9106582708601757766, guid: 18b15b7326ad71343b683ace11074eb2, type: 3}
   attackRange: 2
   moveSpeed: 3
   rb: {fileID: 1654365983}

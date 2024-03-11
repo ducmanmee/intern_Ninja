@@ -10,6 +10,8 @@ public class Character : MonoBehaviour
     [SerializeField] private Animator anim;
 
     [SerializeField] protected HealthBar healthBar;
+    [SerializeField] protected CombatText combatTextPrb;
+
 
 
 
@@ -59,7 +61,7 @@ public class Character : MonoBehaviour
             }
             Debug.Log(1);
             healthBar.setNewHp(hp);
-            Debug.Log(hp);
+            Instantiate(combatTextPrb, transform.position + Vector3.up, Quaternion.identity).OnInit(damage);
         }
 
     }
