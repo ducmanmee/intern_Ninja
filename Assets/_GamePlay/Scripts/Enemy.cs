@@ -8,7 +8,8 @@ public class Enemy : Character
     [SerializeField] private float attackRange;
     [SerializeField] private float moveSpeed;
     [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private GameObject attackArea;
+    [SerializeField] private GameObject attackArea;  
+
 
     private Character target;
     public Character Target => target;
@@ -132,5 +133,5 @@ public class Enemy : Character
     {
         attackArea.SetActive(false);
 
-    }
+    } 
 }
