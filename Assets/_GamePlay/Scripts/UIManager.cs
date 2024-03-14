@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     public static UIManager instance;
+    [SerializeField] Text coinText; 
     /*public static UIManager Instance
     {
         get
@@ -30,7 +31,7 @@ public class UIManager : MonoBehaviour
         makeInstance();
     }
 
-    [SerializeField] Text coinText; 
+
 
     public void setCoin(int coin)
     {

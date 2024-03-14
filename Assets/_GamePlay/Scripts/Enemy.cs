@@ -8,7 +8,10 @@ public class Enemy : Character
     [SerializeField] private float attackRange;
     [SerializeField] private float moveSpeed;
     [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private GameObject attackArea;  
+    [SerializeField] private GameObject attackArea;
+
+    [SerializeField] private KunaiEnemy kunaiEnemy;
+    [SerializeField] private Transform throwEnemyPos;
 
 
     private Character target;
@@ -16,6 +19,20 @@ public class Enemy : Character
 
     private IState currentState;
     private bool isRight = true;
+
+    public static Enemy instance;
+    private void makeInstane()
+    {
+        if(instance == null)
+        {
+            instance = this;
+        }
+    }
+
+    private void Awake()
+    {
+        makeInstane();
+    }
 
     private void Update()
     {
@@ -134,4 +151,15 @@ public class Enemy : Character
         attackArea.SetActive(false);
 
     } 
+
+    internal void throwEnemy(Character character)
+    {
+        this.target = character;
+        StopMoving();
+        ChangeState(new IdleState());
+        ChangeDirection(character.transform.position.x > transform.position.x);
+        _changeAnim("throw");
+        Instantiate(kunaiEnemy, throwEnemyPos.position, throwEnemyPos.rotation);
+        this.target = null;
+    }    
 }

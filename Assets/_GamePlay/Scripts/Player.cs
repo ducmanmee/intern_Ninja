@@ -137,8 +137,11 @@ public class Player : Character
         transform.position = savePoint;
         _changeAnim("idle");
         DeActiveAttackArea();
+        if(UIManager.instance  != null)
+        {
+            UIManager.instance.setCoin(coin);
 
-        UIManager.instance.setCoin(coin);
+        }
     }
 
     public override void OnDespawn()

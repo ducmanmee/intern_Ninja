@@ -59,7 +59,6 @@ public class Character : MonoBehaviour
                 hp = 0;
                 OnDeath();
             }
-            Debug.Log(1);
             healthBar.setNewHp(hp);
             Instantiate(combatTextPrb, transform.position + Vector3.up, Quaternion.identity).OnInit(damage);
         }
