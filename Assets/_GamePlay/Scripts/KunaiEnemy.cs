@@ -23,7 +23,6 @@ public class KunaiEnemy : MonoBehaviour
             Invoke(nameof(OnDespawn), 4f);
 
         }
-        Debug.Log(Enemy.instance);
     }
 
     public void OnDespawn()

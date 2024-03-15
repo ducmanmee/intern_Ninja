@@ -27,6 +27,7 @@ public class Player : Character
 
     public static Player instance;
     private float lifeBullet = 4f;
+    private int countJump = 0;
 
     public void makeInstance()
     {
@@ -55,19 +56,19 @@ public class Player : Character
         {
             doubleJump = false;
         }
-        if (Input.GetKeyDown(KeyCode.Space))
+        /*if (Input.GetKeyDown(KeyCode.Space))
         {
             if( isGrounded || doubleJump)
             {
                 _Jump();
                 doubleJump = !doubleJump;
             }
-        }
+        }*/
 
         if (isGrounded)
         {
 
-            if(isJumping || doubleJump)
+            if(isJumping)
             {
                 return;
             }
@@ -165,11 +166,17 @@ public class Player : Character
 
     public void _Attack()
     {
-        _changeAnim("attack");
-        isAttack = true;
-        Invoke(nameof(_resetAttack), .5f);
-        ActiveAttackArea();
-        Invoke(nameof(DeActiveAttackArea), .5f);
+        if (isGrounded)
+        {
+            if (!isJumping)
+            { 
+                _changeAnim("attack");
+                isAttack = true;
+                Invoke(nameof(_resetAttack), .5f);
+                ActiveAttackArea();
+                Invoke(nameof(DeActiveAttackArea), .5f);
+            }
+        }
 
     }
 
@@ -181,18 +188,51 @@ public class Player : Character
 
     public void _Throw()
     {
-        _changeAnim("throw");
-        isAttack = true;
-        Invoke(nameof(_resetAttack), .5f);
+        if(isGrounded)
+        {
+            if(!isJumping)
+            {
+                _changeAnim("throw");
+                isAttack = true;
+                Invoke(nameof(_resetAttack), .5f);
 
-        Instantiate(kunaiPrefabs, throwPoint.position, throwPoint.rotation);
+                Instantiate(kunaiPrefabs, throwPoint.position, throwPoint.rotation);
+            }
+        } 
     }
 
     public void _Jump()
     {
-        isJumping = true;
-        _changeAnim("jump");
-        playerRb.AddForce(jumpForce * Vector2.up);
+        /*if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (isGrounded || doubleJump)
+            {
+                Debug.Log("jump");
+                isJumping = true;
+                _changeAnim("jump");
+                playerRb.AddForce(jumpForce * Vector2.up);
+                doubleJump = !doubleJump;
+            }
+        }*/
+        if (!isGrounded && !doubleJump)
+        {
+            countJump++;
+        }
+        if(countJump == 1)
+        {
+            _changeAnim("jump");
+            playerRb.AddForce(jumpForce * Vector2.up);
+            countJump = 0;
+            doubleJump = true;
+        }
+
+        if (isGrounded)
+        {
+            doubleJump = false;
+            isJumping = true;
+            _changeAnim("jump");
+            playerRb.AddForce(jumpForce * Vector2.up);
+        }
     }  
     
     private void OnTriggerEnter2D(Collider2D collision)
