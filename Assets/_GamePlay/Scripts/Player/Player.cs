@@ -9,11 +9,19 @@ public class Player : Character
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private float speed = 5f;
 
+
     private bool doubleJump;
 
     private float horizontal;
+    private bool glideInput;
+    private float vertical;
+    private float climbSpeed = 4f;
+    private bool isLadder;
+    private bool isClimbing = false;
+
     private bool isGrounded = true;
     private bool isJumping = false;
+    private bool rsAttack;
     private bool isAttack = false;
     [SerializeField] private float jumpForce = 350;
     private int coin = 0;
@@ -23,18 +31,23 @@ public class Player : Character
     [SerializeField] private Kunai kunaiPrefabs;
     [SerializeField] private Transform throwPoint;
     [SerializeField] private GameObject attackArea;
-    
+    public AudioClip goldClip;
+
 
     public static Player instance;
     private float lifeBullet = 4f;
     private int countJump = 0;
 
+    [SerializeField] private float glidingSpeed;
+    private float initialGravityScale;
+    private bool isGlide;
+
     public void makeInstance()
     {
-        if(instance == null)
+        if (instance == null)
         {
             instance = this;
-        }    
+        }
     }
 
     private void Awake()
@@ -44,31 +57,50 @@ public class Player : Character
         OnInit();
         //Save coin sau khi play again
         coin = PlayerPrefs.GetInt("coin", 0);
+        initialGravityScale = playerRb.gravityScale;
     }
 
     private void Update()
     {
-        if(isDead) return;
+        if(isGlide)
+        {
+            return;
+        }    
+        
+        vertical = Input.GetAxisRaw("Vertical");
+
+        if (isLadder && Mathf.Abs(vertical) > 0f)
+        {
+            isClimbing = true;
+        }
+
+        if (isClimbing)
+        {
+            playerRb.gravityScale = 0f;
+            playerRb.velocity = new Vector2(playerRb.velocity.x, vertical * speed * Time.fixedDeltaTime);
+            _changeAnim("climb");
+            playerRb.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
+
+        }
+        else
+        {
+            playerRb.gravityScale = 1f;
+            playerRb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        }
+
+        if (isDead) return;
 
         isGrounded = _checkGrounded();
         //jump
-        if(isGrounded && !Input.GetKeyDown(KeyCode.Space))
+        if (isGrounded && !Input.GetKeyDown(KeyCode.Space))
         {
             doubleJump = false;
         }
-        /*if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if( isGrounded || doubleJump)
-            {
-                _Jump();
-                doubleJump = !doubleJump;
-            }
-        }*/
 
         if (isGrounded)
         {
 
-            if(isJumping)
+            if (isJumping || isAttack)
             {
                 return;
             }
@@ -80,7 +112,7 @@ public class Player : Character
 
             if (Input.GetKeyDown(KeyCode.J))
             {
-                if(!isAttack)
+                if (!isAttack)
                 {
                     _Attack();
                 }
@@ -90,7 +122,7 @@ public class Player : Character
             {
                 _Throw();
             }
- 
+
         }
 
         //check falling 
@@ -99,7 +131,7 @@ public class Player : Character
             _changeAnim("fall");
             isJumping = false;
         }
-        if(Mathf.Abs(horizontal) < 0.1f && isGrounded && !isJumping)
+        if (Mathf.Abs(horizontal) < 0.1f && isGrounded && !isJumping && !isClimbing)
         {
             _changeAnim("idle");
             playerRb.velocity = Vector2.zero;
@@ -110,7 +142,14 @@ public class Player : Character
     void FixedUpdate()
     {
         if (isDead) return;
-        horizontal = Input.GetAxisRaw("Horizontal");
+
+        //Climbing
+        
+        if (!isClimbing)
+        {
+            horizontal = Input.GetAxisRaw("Horizontal");
+        }
+  
 
         if(isAttack)
         {
@@ -122,12 +161,7 @@ public class Player : Character
         {
             playerRb.velocity = new Vector2(horizontal * Time.fixedDeltaTime * speed, playerRb.velocity.y);
             transform.rotation = Quaternion.Euler(new Vector3(0, horizontal > 0 ? 0 : 180, 0));
-        }    
-        /*else if (isGrounded && !isJumping) 
-        {
-            _changeAnim("idle");
-            playerRb.velocity = Vector2.zero;
-        } */   
+        }      
     }
 
     public override void OnInit()
@@ -168,13 +202,15 @@ public class Player : Character
     {
         if (isGrounded)
         {
-            if (!isJumping)
+            if (!isJumping && !rsAttack)
             { 
                 _changeAnim("attack");
+                audioSource.PlayOneShot(hitClip);
                 isAttack = true;
                 Invoke(nameof(_resetAttack), .5f);
                 ActiveAttackArea();
                 Invoke(nameof(DeActiveAttackArea), .5f);
+                rsAttack = true;
             }
         }
 
@@ -182,6 +218,7 @@ public class Player : Character
 
     private void _resetAttack()
     {
+        rsAttack = false;
         isAttack = false;
         _changeAnim("idle");
     }
@@ -193,6 +230,7 @@ public class Player : Character
             if(!isJumping)
             {
                 _changeAnim("throw");
+                audioSource.PlayOneShot(throwClip);
                 isAttack = true;
                 Invoke(nameof(_resetAttack), .5f);
 
@@ -202,18 +240,7 @@ public class Player : Character
     }
 
     public void _Jump()
-    {
-        /*if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if (isGrounded || doubleJump)
-            {
-                Debug.Log("jump");
-                isJumping = true;
-                _changeAnim("jump");
-                playerRb.AddForce(jumpForce * Vector2.up);
-                doubleJump = !doubleJump;
-            }
-        }*/
+    {   
         if (!isGrounded && !doubleJump)
         {
             countJump++;
@@ -241,6 +268,7 @@ public class Player : Character
         {
             coin++;
             PlayerPrefs.SetInt("coin", coin);
+            audioSource.PlayOneShot(goldClip);
             UIManager.instance.setCoin(coin);
             Destroy(collision.gameObject);
         }
@@ -257,6 +285,26 @@ public class Player : Character
             _changeAnim("die");
 
             Invoke(nameof(OnInit), 1f);
+        }
+
+        if(collision.tag == "ladder")
+        {
+            isLadder = true;
+
+        }
+
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if(collision.tag == "ladder")
+        {
+            isLadder = false;
+            isClimbing = false;
+            Vector2 temp = this.transform.position;
+            temp.y = collision.transform.position.y + 4.5f;
+            this.transform.position = temp;
+            _changeAnim("fall");
         }
     }
 
@@ -279,5 +327,40 @@ public class Player : Character
     public void SetMove(float horizontal)
     {
         this.horizontal = horizontal;
+    }
+
+    public void onPointerDown()
+    {
+        isGlide = true;
+        StartCoroutine(glidePlayer());
+    }
+    public void onPointerUp()
+    {
+        isGlide = false;
+    }
+
+    IEnumerator glidePlayer()
+    {
+        yield return new WaitForSeconds(1f);
+        _changeAnim("glide");
+        while (isGlide)
+        {
+            if (playerRb.velocity.y <= 0 && !isGrounded)
+            {
+                playerRb.gravityScale = 0;
+                playerRb.velocity = new Vector2(playerRb.velocity.x, -glidingSpeed);
+                Debug.Log("bay");  
+                _changeAnim("glide");
+                Debug.Log(1);
+
+            }
+            else
+            {
+                playerRb.gravityScale = initialGravityScale;
+                _changeAnim("fall");
+            }
+            yield return null;
+        }    
+
     }
 }

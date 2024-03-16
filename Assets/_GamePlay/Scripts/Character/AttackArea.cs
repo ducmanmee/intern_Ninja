@@ -4,11 +4,21 @@ using UnityEngine;
 
 public class AttackArea : MonoBehaviour
 {
-    private void OnTriggerEnter2D(Collider2D collision)
+    bool canAttack = true;
+
+    private void OnEnable()
+    {
+        canAttack = true;
+    }
+    private void OnTriggerStay2D(Collider2D collision)
     {
         if(collision.tag == "Player" ||  collision.tag == "Enemy")
         {
-            collision.GetComponent<Character>().OnHit(30f);
+            if (canAttack)
+            {
+                collision.GetComponent<Character>().OnHit(30f);
+                canAttack = false;
+            }
         }
     }
 }

@@ -8,6 +8,9 @@ public class Character : MonoBehaviour
     private float hp;
     private string currentAnim;
     [SerializeField] private Animator anim;
+    public AudioSource audioSource;
+    public AudioClip hitClip;
+    public AudioClip throwClip;
 
     [SerializeField] protected HealthBar healthBar;
     [SerializeField] protected CombatText combatTextPrb;
@@ -20,6 +23,7 @@ public class Character : MonoBehaviour
     private void Start()
     {
         OnInit();
+        audioSource = GetComponent<AudioSource>();
     }
 
     public virtual void OnInit()

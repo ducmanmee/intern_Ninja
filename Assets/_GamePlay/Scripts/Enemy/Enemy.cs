@@ -52,7 +52,6 @@ public class Enemy : Character
 
     public override void OnDespawn()
     {
-        base.OnDespawn();
         Destroy(healthBar.gameObject);
         Destroy(gameObject);
     }
@@ -159,6 +158,7 @@ public class Enemy : Character
         ChangeState(new IdleState());
         ChangeDirection(character.transform.position.x > transform.position.x);
         _changeAnim("throw");
+        audioSource.PlayOneShot(throwClip);
         Instantiate(kunaiEnemy, throwEnemyPos.position, throwEnemyPos.rotation);
         this.target = null;
     }    
