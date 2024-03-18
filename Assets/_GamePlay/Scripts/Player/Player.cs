@@ -23,8 +23,18 @@ public class Player : Character
     private bool isJumping = false;
     private bool rsAttack;
     private bool isAttack = false;
+    private bool canJumpAtk = false;
     [SerializeField] private float jumpForce = 350;
     private int coin = 0;
+
+    //Slide 
+    private bool canDash = true;
+    private bool isDashing;
+    public float dashingPower = 24f;
+    public float dashingTime = .2f;
+    public float dashingCooldown = 1f;
+
+    [SerializeField] private TrailRenderer trail;
 
     private Vector3 savePoint;
 
@@ -62,10 +72,10 @@ public class Player : Character
 
     private void Update()
     {
-        if(isGlide)
+        if(isGlide || isDashing)
         {
             return;
-        }    
+        }   
         
         vertical = Input.GetAxisRaw("Vertical");
 
@@ -99,7 +109,6 @@ public class Player : Character
 
         if (isGrounded)
         {
-
             if (isJumping || isAttack)
             {
                 return;
@@ -141,8 +150,10 @@ public class Player : Character
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (isDead) return;
-
+        if (isDead || isDashing)
+        {
+            return;
+        }
         //Climbing
         
         if (!isClimbing)
@@ -200,6 +211,7 @@ public class Player : Character
 
     public void _Attack()
     {
+        //Debug.Log(canJumpAtk + ", " + isJumping);
         if (isGrounded)
         {
             if (!isJumping && !rsAttack)
@@ -211,10 +223,11 @@ public class Player : Character
                 ActiveAttackArea();
                 Invoke(nameof(DeActiveAttackArea), .5f);
                 rsAttack = true;
-            }
+            }   
         }
+  
 
-    }
+    }  
 
     private void _resetAttack()
     {
@@ -240,7 +253,7 @@ public class Player : Character
     }
 
     public void _Jump()
-    {   
+    {
         if (!isGrounded && !doubleJump)
         {
             countJump++;
@@ -342,7 +355,6 @@ public class Player : Character
     IEnumerator glidePlayer()
     {
         yield return new WaitForSeconds(1f);
-        _changeAnim("glide");
         while (isGlide)
         {
             if (playerRb.velocity.y <= 0 && !isGrounded)
@@ -363,4 +375,29 @@ public class Player : Character
         }    
 
     }
+
+    private IEnumerator dash()
+    {
+        if(isGrounded)
+        {
+            canDash = false;
+            isDashing = true;
+            float originalGravity = playerRb.gravityScale;
+            playerRb.gravityScale = 0f;
+            playerRb.velocity = this.transform.right * dashingPower;
+            _changeAnim("slide");
+            trail.emitting = true;
+            yield return new WaitForSeconds(dashingTime);
+            trail.emitting = false;
+            playerRb.gravityScale = originalGravity;
+            _changeAnim("idle");
+            isDashing = false;
+            yield return new WaitForSeconds(dashingCooldown);
+            canDash = true;
+        }
+    }    
+    public void DashPlayer()
+    {
+        StartCoroutine(dash());
+    }    
 }
