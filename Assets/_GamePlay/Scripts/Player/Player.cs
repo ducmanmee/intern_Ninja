@@ -18,12 +18,13 @@ public class Player : Character
     private float climbSpeed = 4f;
     private bool isLadder;
     private bool isClimbing = false;
+    private bool isSkill = false;
+    public bool canSkill = false;
 
     private bool isGrounded = true;
     private bool isJumping = false;
     private bool rsAttack;
-    private bool isAttack = false;
-    private bool canJumpAtk = false;
+    private bool isAttack = false;  
     [SerializeField] private float jumpForce = 350;
     private int coin = 0;
 
@@ -51,7 +52,7 @@ public class Player : Character
     [SerializeField] private float glidingSpeed;
     private float initialGravityScale;
     private bool isGlide;
-
+    
     public void makeInstance()
     {
         if (instance == null)
@@ -72,7 +73,7 @@ public class Player : Character
 
     private void Update()
     {
-        if(isGlide || isDashing)
+        if(isGlide || isDashing || canSkill)
         {
             return;
         }   
@@ -150,7 +151,7 @@ public class Player : Character
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (isDead || isDashing)
+        if (isDead || isDashing || canSkill)
         {
             return;
         }
@@ -211,7 +212,6 @@ public class Player : Character
 
     public void _Attack()
     {
-        //Debug.Log(canJumpAtk + ", " + isJumping);
         if (isGrounded)
         {
             if (!isJumping && !rsAttack)
@@ -224,10 +224,30 @@ public class Player : Character
                 Invoke(nameof(DeActiveAttackArea), .5f);
                 rsAttack = true;
             }   
-        }
+        }  
   
 
-    }  
+    }
+    
+    public void _attackSkill()
+    {
+        if(isGrounded && !isJumping && !isDashing && !isSkill)
+        {
+            _changeAnim("attackSkill");
+            playerRb.velocity = Vector2.zero;
+            canSkill = true;
+            isSkill = true;
+            ActiveAttackArea() ;
+            Invoke(nameof(_rsAttackSkill), 1f);
+        }    
+    }    
+
+    public void _rsAttackSkill()
+    {
+        canSkill = false;
+        isSkill = false;
+        DeActiveAttackArea() ;
+    }    
 
     private void _resetAttack()
     {
