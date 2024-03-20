@@ -67,6 +67,7 @@ public class Character : MonoBehaviour
             Instantiate(combatTextPrb, transform.position + Vector3.up, Quaternion.identity).OnInit(damage);
         }
 
-    } 
+    }
+    public Animator getAnim() => anim; 
 
 }

@@ -12,6 +12,8 @@ TagManager:
   - kunai
   - Trap
   - ladder
+  - lapup
+  - lapdown
   layers:
   - Default
   - TransparentFX

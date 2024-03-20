@@ -29,8 +29,9 @@ public class Player : Character
     private int coin = 0;
 
     //Slide 
-    private bool canDash = true;
-    private bool isDashing;
+    public bool canDash = true;
+
+    public bool isDashing;
     public float dashingPower = 24f;
     public float dashingTime = .2f;
     public float dashingCooldown = 1f;
@@ -46,7 +47,7 @@ public class Player : Character
 
 
     public static Player instance;
-    private float lifeBullet = 4f;
+    private float lifeBullet = .4f;
     private int countJump = 0;
 
     [SerializeField] private float glidingSpeed;
@@ -77,7 +78,7 @@ public class Player : Character
         {
             return;
         }   
-        
+       
         vertical = Input.GetAxisRaw("Vertical");
 
         if (isLadder && Mathf.Abs(vertical) > 0f)
@@ -85,19 +86,37 @@ public class Player : Character
             isClimbing = true;
         }
 
+        if(isLadder)
+        {
+            _changeAnim("climb");
+            SetAnimationSpeed("climb", 0f);
+            playerRb.constraints = RigidbodyConstraints2D.FreezePositionX 
+                | RigidbodyConstraints2D.FreezeRotation
+                | RigidbodyConstraints2D.FreezePositionY;
+        }
+
         if (isClimbing)
         {
-            playerRb.gravityScale = 0f;
-            playerRb.velocity = new Vector2(playerRb.velocity.x, vertical * speed * Time.fixedDeltaTime);
-            _changeAnim("climb");
-            playerRb.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
+            if(vertical == 1)
+            {
+                SetAnimationSpeed("climb", 1f);
+                Vector3 temp = this.transform.position;
+                temp.y += climbSpeed * Time.deltaTime;
+                this.transform.position = temp;
+            }
+            else if(vertical == -1)
+            {
+                SetAnimationSpeed("climb", 1f);
+                Vector3 temp = this.transform.position;
+                temp.y -= climbSpeed * Time.deltaTime;
+                this.transform.position = temp;
+            }
+            else
+            {
+                SetAnimationSpeed("climb", 0f);
+            }
+        }
 
-        }
-        else
-        {
-            playerRb.gravityScale = 1f;
-            playerRb.constraints = RigidbodyConstraints2D.FreezeRotation;
-        }
 
         if (isDead) return;
 
@@ -274,6 +293,7 @@ public class Player : Character
 
     public void _Jump()
     {
+        Debug.Log(1);
         if (!isGrounded && !doubleJump)
         {
             countJump++;
@@ -323,9 +343,25 @@ public class Player : Character
         if(collision.tag == "ladder")
         {
             isLadder = true;
-
         }
 
+        if(collision.tag == "lapup")
+        {
+            Vector3 temp = this.transform.position;
+            temp.y += 4f;
+            this.transform.position = temp;
+            _changeAnim("fall");
+        }
+
+    }
+
+    private void SetAnimationSpeed(string animationName, float speed)
+    {
+        AnimatorStateInfo state = getAnim().GetCurrentAnimatorStateInfo(0);
+        if (state.IsName(animationName))
+        {
+            getAnim().SetFloat("Speed", speed); 
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -333,11 +369,8 @@ public class Player : Character
         if(collision.tag == "ladder")
         {
             isLadder = false;
-            isClimbing = false;
-            Vector2 temp = this.transform.position;
-            temp.y = collision.transform.position.y + 4.5f;
-            this.transform.position = temp;
-            _changeAnim("fall");
+            isClimbing = false; 
+            playerRb.constraints = RigidbodyConstraints2D.FreezeRotation;         
         }
     }
 
@@ -374,6 +407,7 @@ public class Player : Character
 
     IEnumerator glidePlayer()
     {
+        
         yield return new WaitForSeconds(1f);
         while (isGlide)
         {
@@ -381,15 +415,11 @@ public class Player : Character
             {
                 playerRb.gravityScale = 0;
                 playerRb.velocity = new Vector2(playerRb.velocity.x, -glidingSpeed);
-                Debug.Log("bay");  
                 _changeAnim("glide");
-                Debug.Log(1);
-
             }
             else
             {
                 playerRb.gravityScale = initialGravityScale;
-                _changeAnim("fall");
             }
             yield return null;
         }    
@@ -400,20 +430,21 @@ public class Player : Character
     {
         if(isGrounded)
         {
-            canDash = false;
-            isDashing = true;
-            float originalGravity = playerRb.gravityScale;
-            playerRb.gravityScale = 0f;
-            playerRb.velocity = this.transform.right * dashingPower;
-            _changeAnim("slide");
-            trail.emitting = true;
-            yield return new WaitForSeconds(dashingTime);
-            trail.emitting = false;
-            playerRb.gravityScale = originalGravity;
-            _changeAnim("idle");
-            isDashing = false;
-            yield return new WaitForSeconds(dashingCooldown);
-            canDash = true;
+            if(canDash)
+            {
+                canDash = false;
+                isDashing = true;
+                float originalGravity = playerRb.gravityScale;
+                playerRb.gravityScale = 0f;
+                playerRb.velocity = this.transform.right * dashingPower;
+                _changeAnim("slide");
+                trail.emitting = true;
+                yield return new WaitForSeconds(dashingTime);
+                trail.emitting = false;
+                playerRb.gravityScale = originalGravity;
+                _changeAnim("idle");
+                isDashing = false;
+            }    
         }
     }    
     public void DashPlayer()

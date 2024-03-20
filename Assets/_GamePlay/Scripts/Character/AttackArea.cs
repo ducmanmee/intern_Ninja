@@ -41,7 +41,7 @@ public class AttackArea : MonoBehaviour
 
     IEnumerator dameSkill(Collider2D collision)
     {
-        yield return new WaitForSeconds(.6f);
+        yield return new WaitForSeconds(.7f);
         collision.GetComponent<Character>().OnHit(100f);
     }
 }
