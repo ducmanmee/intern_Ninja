@@ -16,7 +16,11 @@ public class Character : MonoBehaviour
     [SerializeField] protected CombatText combatTextPrb;
 
 
+    public enum StateAnim
+    {
+        die,
 
+    }    
 
     public bool isDead => hp <= 0;
 
@@ -39,11 +43,11 @@ public class Character : MonoBehaviour
 
     protected virtual void OnDeath()
     {
-        _changeAnim("die");
+        _changeAnim(Constant.ANIM_DIE);
         Invoke(nameof(OnDespawn), 1f);
     }
 
-    protected void _changeAnim(string animName)
+    public void _changeAnim(string animName)
     {
         if (currentAnim != animName)
         {

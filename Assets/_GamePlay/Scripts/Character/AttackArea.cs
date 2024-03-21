@@ -18,7 +18,7 @@ public class AttackArea : MonoBehaviour
         {
             if (canAttack)
             {
-                if(!Player.instance.canSkill)
+                if(!Player.instance.isSkill)
                 {
                     collision.GetComponent<Character>().OnHit(30f);
                     canAttack = false;
@@ -29,10 +29,9 @@ public class AttackArea : MonoBehaviour
         {
             if(canAttack)
             {
-                if(Player.instance.canSkill)
+                if(Player.instance.isSkill)
                 {
                     StartCoroutine(dameSkill(collision));
-                    Debug.Log("dame");
                     canAttack = false;
                 }
             }

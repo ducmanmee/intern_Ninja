@@ -80,19 +80,19 @@ public class Enemy : Character
 
     public void Moving()
     {
-        _changeAnim("run");
+        _changeAnim(Constant.ANIM_RUN);
         rb.velocity = transform.right * moveSpeed;
     }   
     
     public void StopMoving()
     {
-        _changeAnim("idle");
+        _changeAnim(Constant.ANIM_IDLE);
         rb.velocity = Vector2.zero;
     }   
     
     public void Attack()
     {
-        _changeAnim("attack");
+        _changeAnim(Constant.ANIM_ATTACK);
         ActiveAttackArea();
         Invoke(nameof(DeActiveAttackArea), .5f);
     }   
@@ -157,7 +157,7 @@ public class Enemy : Character
         StopMoving();
         ChangeState(new IdleState());
         ChangeDirection(character.transform.position.x > transform.position.x);
-        _changeAnim("throw");
+        _changeAnim(Constant.ANIM_THROW);
         audioSource.PlayOneShot(throwClip);
         Instantiate(kunaiEnemy, throwEnemyPos.position, throwEnemyPos.rotation);
         this.target = null;

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class Player : Character
 {
     [SerializeField] private Rigidbody2D playerRb;
@@ -18,8 +19,9 @@ public class Player : Character
     private float climbSpeed = 4f;
     private bool isLadder;
     private bool isClimbing = false;
-    private bool isSkill = false;
-    public bool canSkill = false;
+    public bool isSkill = false;
+    public bool canSkill = true;
+    public float skillCooldown = 4f;
 
     private bool isGrounded = true;
     private bool isJumping = false;
@@ -34,7 +36,7 @@ public class Player : Character
     public bool isDashing;
     public float dashingPower = 24f;
     public float dashingTime = .2f;
-    public float dashingCooldown = 1f;
+    public float dashingCooldown = 4f;
 
     [SerializeField] private TrailRenderer trail;
 
@@ -53,7 +55,7 @@ public class Player : Character
     [SerializeField] private float glidingSpeed;
     private float initialGravityScale;
     private bool isGlide;
-    
+
     public void makeInstance()
     {
         if (instance == null)
@@ -74,11 +76,15 @@ public class Player : Character
 
     private void Update()
     {
-        if(isGlide || isDashing || canSkill)
+        if(isGlide || isDashing || isSkill)
         {
             return;
-        }   
-       
+        }
+
+        if (isDead) return;
+
+        isGrounded = _checkGrounded();
+
         vertical = Input.GetAxisRaw("Vertical");
 
         if (isLadder && Mathf.Abs(vertical) > 0f)
@@ -88,8 +94,8 @@ public class Player : Character
 
         if(isLadder)
         {
-            _changeAnim("climb");
-            SetAnimationSpeed("climb", 0f);
+            _changeAnim(Constant.ANIM_CLIMB);
+            SetAnimationSpeed(Constant.ANIM_CLIMB, 0f);
             playerRb.constraints = RigidbodyConstraints2D.FreezePositionX 
                 | RigidbodyConstraints2D.FreezeRotation
                 | RigidbodyConstraints2D.FreezePositionY;
@@ -99,33 +105,36 @@ public class Player : Character
         {
             if(vertical == 1)
             {
-                SetAnimationSpeed("climb", 1f);
+                SetAnimationSpeed(Constant.ANIM_CLIMB, 1f);
                 Vector3 temp = this.transform.position;
                 temp.y += climbSpeed * Time.deltaTime;
                 this.transform.position = temp;
             }
             else if(vertical == -1)
             {
-                SetAnimationSpeed("climb", 1f);
+                SetAnimationSpeed(Constant.ANIM_CLIMB, 1f);
                 Vector3 temp = this.transform.position;
                 temp.y -= climbSpeed * Time.deltaTime;
                 this.transform.position = temp;
             }
             else
             {
-                SetAnimationSpeed("climb", 0f);
+                SetAnimationSpeed(Constant.ANIM_CLIMB, 0f);
             }
         }
 
-
-        if (isDead) return;
-
-        isGrounded = _checkGrounded();
         //jump
         if (isGrounded && !Input.GetKeyDown(KeyCode.Space))
         {
             doubleJump = false;
         }
+
+        //Glide
+        if(!isGlide)
+        {
+            playerRb.gravityScale = initialGravityScale;
+        }
+
 
         if (isGrounded)
         {
@@ -136,7 +145,7 @@ public class Player : Character
 
             if (Mathf.Abs(horizontal) > 0.1f)
             {
-                _changeAnim("run");
+                _changeAnim(Constant.ANIM_RUN);
             }
 
             if (Input.GetKeyDown(KeyCode.J))
@@ -157,12 +166,12 @@ public class Player : Character
         //check falling 
         if (!isGrounded && playerRb.velocity.y < 0)
         {
-            _changeAnim("fall");
+            _changeAnim(Constant.ANIM_FALL);
             isJumping = false;
         }
         if (Mathf.Abs(horizontal) < 0.1f && isGrounded && !isJumping && !isClimbing)
         {
-            _changeAnim("idle");
+            _changeAnim(Constant.ANIM_IDLE);
             playerRb.velocity = Vector2.zero;
         }
     }
@@ -170,7 +179,7 @@ public class Player : Character
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (isDead || isDashing || canSkill)
+        if (isDead || isDashing || isSkill)
         {
             return;
         }
@@ -199,9 +208,9 @@ public class Player : Character
     {
         base.OnInit();
         isAttack = false;
-
+        canSkill = true;
         transform.position = savePoint;
-        _changeAnim("idle");
+        _changeAnim(Constant.ANIM_IDLE);
         DeActiveAttackArea();
         if(UIManager.instance  != null)
         {
@@ -235,7 +244,7 @@ public class Player : Character
         {
             if (!isJumping && !rsAttack)
             { 
-                _changeAnim("attack");
+                _changeAnim(Constant.ANIM_ATTACK);
                 audioSource.PlayOneShot(hitClip);
                 isAttack = true;
                 Invoke(nameof(_resetAttack), .5f);
@@ -250,20 +259,23 @@ public class Player : Character
     
     public void _attackSkill()
     {
-        if(isGrounded && !isJumping && !isDashing && !isSkill)
+
+        if(isGrounded && !isJumping && canDash)
         {
-            _changeAnim("attackSkill");
-            playerRb.velocity = Vector2.zero;
-            canSkill = true;
-            isSkill = true;
-            ActiveAttackArea() ;
-            Invoke(nameof(_rsAttackSkill), 1f);
+            if(canSkill)
+            {
+                _changeAnim(Constant.ANIM_ATTACKSKILL);
+                playerRb.velocity = Vector2.zero;
+                canSkill = false;
+                isSkill = true;
+                ActiveAttackArea() ;
+            }
         }    
     }    
 
     public void _rsAttackSkill()
     {
-        canSkill = false;
+        canSkill = true;
         isSkill = false;
         DeActiveAttackArea() ;
     }    
@@ -272,7 +284,7 @@ public class Player : Character
     {
         rsAttack = false;
         isAttack = false;
-        _changeAnim("idle");
+        _changeAnim(Constant.ANIM_IDLE);
     }
 
     public void _Throw()
@@ -281,7 +293,7 @@ public class Player : Character
         {
             if(!isJumping)
             {
-                _changeAnim("throw");
+                _changeAnim(Constant.ANIM_THROW);
                 audioSource.PlayOneShot(throwClip);
                 isAttack = true;
                 Invoke(nameof(_resetAttack), .5f);
@@ -293,14 +305,13 @@ public class Player : Character
 
     public void _Jump()
     {
-        Debug.Log(1);
         if (!isGrounded && !doubleJump)
         {
             countJump++;
         }
         if(countJump == 1)
         {
-            _changeAnim("jump");
+            _changeAnim(Constant.ANIM_JUMP);
             playerRb.AddForce(jumpForce * Vector2.up);
             countJump = 0;
             doubleJump = true;
@@ -310,7 +321,7 @@ public class Player : Character
         {
             doubleJump = false;
             isJumping = true;
-            _changeAnim("jump");
+            _changeAnim(Constant.ANIM_JUMP);
             playerRb.AddForce(jumpForce * Vector2.up);
         }
     }  
@@ -328,14 +339,14 @@ public class Player : Character
         if(collision.tag == "deathZone")
         {
             OnHit(100);
-            _changeAnim("die");
+            _changeAnim(Constant.ANIM_DIE);
 
             Invoke(nameof(OnInit), 1f);
         }
         if (collision.tag == "Trap")
         {
             OnHit(100);
-            _changeAnim("die");
+            _changeAnim(Constant.ANIM_DIE);
 
             Invoke(nameof(OnInit), 1f);
         }
@@ -350,7 +361,7 @@ public class Player : Character
             Vector3 temp = this.transform.position;
             temp.y += 4f;
             this.transform.position = temp;
-            _changeAnim("fall");
+            _changeAnim(Constant.ANIM_FALL);
         }
 
     }
@@ -384,7 +395,7 @@ public class Player : Character
         attackArea.SetActive(true);
     }
 
-    private void DeActiveAttackArea()
+    public void DeActiveAttackArea()
     {
         attackArea.SetActive(false);
 
@@ -415,11 +426,7 @@ public class Player : Character
             {
                 playerRb.gravityScale = 0;
                 playerRb.velocity = new Vector2(playerRb.velocity.x, -glidingSpeed);
-                _changeAnim("glide");
-            }
-            else
-            {
-                playerRb.gravityScale = initialGravityScale;
+                _changeAnim(Constant.ANIM_GLIDE);
             }
             yield return null;
         }    
@@ -437,12 +444,12 @@ public class Player : Character
                 float originalGravity = playerRb.gravityScale;
                 playerRb.gravityScale = 0f;
                 playerRb.velocity = this.transform.right * dashingPower;
-                _changeAnim("slide");
+                _changeAnim(Constant.ANIM_SLIDE);
                 trail.emitting = true;
                 yield return new WaitForSeconds(dashingTime);
                 trail.emitting = false;
                 playerRb.gravityScale = originalGravity;
-                _changeAnim("idle");
+                _changeAnim(Constant.ANIM_IDLE);
                 isDashing = false;
             }    
         }
@@ -450,5 +457,7 @@ public class Player : Character
     public void DashPlayer()
     {
         StartCoroutine(dash());
-    }    
+    }
+
+    
 }
